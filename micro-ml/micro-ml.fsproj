@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>fsharp_interpreter</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Absyn.fs" />
+    <Compile Include="Parser.fs" />
+    <Compile Include="Eval.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FParsec" Version="1.0.4-RC3" />
+  </ItemGroup>
+</Project>

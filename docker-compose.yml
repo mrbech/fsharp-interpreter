@@ -1,0 +1,24 @@
+version: '3'
+services:
+    interpreter:
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+            args:
+                PROJECT_DIR: ${PROJECT_DIR}
+        volumes:
+            - ./:${PROJECT_DIR}/fsharp-interpreter
+            - ${PROJECT_DIR}/fsharp-interpreter/micro-ml/bin
+            - ${PROJECT_DIR}/fsharp-interpreter/micro-ml/obj
+        command: dotnet watch --project micro-ml run
+    fsharp-language-server:
+        volumes:
+            - ./:${PROJECT_DIR}/fsharp-interpreter
+            - ${PROJECT_DIR}/fsharp-interpreter/micro-ml/bin
+            - ${PROJECT_DIR}/fsharp-interpreter/micro-ml/obj
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+            args:
+                PROJECT_DIR: ${PROJECT_DIR}
+        command: ./fsharp-language-server

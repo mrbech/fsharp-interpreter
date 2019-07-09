@@ -1,0 +1,2 @@
+#!/bin/bash
+dotnet /fsharp-language-server/src/FSharpLanguageServer/bin/Release/netcoreapp2.0/FSharpLanguageServer.dll 2> /dev/null
