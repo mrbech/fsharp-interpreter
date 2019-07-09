@@ -14,7 +14,7 @@ let main argv =
         let result = ast |> Result.map Eval.run
         match result with
         | Ok i -> 
-            printfn "%d" i
+            printfn "%A" i
             0
         | Error e ->
             printfn "Error: %A" e 

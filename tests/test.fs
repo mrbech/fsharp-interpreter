@@ -4,7 +4,7 @@ open NUnit.Framework
 
 open Helpers
 
-let expectEval i s = s |> Parser.fromString |> assertOK |> Eval.run |> (fun r -> assertEqual r i)
+let expectIntEval i s = s |> Parser.fromString |> assertOK |> Eval.run |> (fun r -> assertEqual r (Eval.Int i))
 
 [<Test>]
 let fibnaccio() =
@@ -16,25 +16,25 @@ let fibnaccio() =
         in 
             fib 25 
         end
-    end" |> expectEval 75025
+    end" |> expectIntEval 75025
 
 [<Test>]
-let basicExpr() = "5+7" |> expectEval 12
+let basicExpr() = "5+7" |> expectIntEval 12
 
 [<Test>]
-let nestedExpr() = "3+(2+7)" |> expectEval 12
+let nestedExpr() = "3+(2+7)" |> expectIntEval 12
 
 [<Test>]
-let lackOfAssociation() = "2+7*10" |> expectEval 90
+let lackOfAssociation() = "2+7*10" |> expectIntEval 90
 
 [<Test>]
-let addFun() = "let f1 x = x + 1 in f1 11 end" |> expectEval 12
+let addFun() = "let f1 x = x + 1 in f1 11 end" |> expectIntEval 12
 
 [<Test>]
-let factorial() = "let fac x = if x=0 then 1 else x * (fac (x-1)) in fac 10 end" |> expectEval 3628800
+let factorial() = "let fac x = if x=0 then 1 else x * (fac (x-1)) in fac 10 end" |> expectIntEval 3628800
 
 [<Test>]
-let deepRecursion() = "let deep x = if x=0 then 1 else deep(x-1) in deep 99999 end" |> expectEval 1
+let deepRecursion() = "let deep x = if x=0 then 1 else deep(x-1) in deep 99999 end" |> expectIntEval 1
 
 [<Test>]
 let staticScope() = 
@@ -42,4 +42,10 @@ let staticScope() =
         let f x = x + y in
             let y = 22 in f 3 end 
         end
-    end" |> expectEval 14
+    end" |> expectIntEval 14
+
+[<Test>]
+let twice() =
+    "let twice f = let g x = f (f x) in g end
+         in let mul3 z = z*3 in twice mul3 2 end end"
+    |> expectIntEval 18

@@ -26,49 +26,44 @@ type value =
   | Int of int
   | Closure of string * string * expr * value env       (* (f, x, fBody, fDeclEnv) *)
 
-let rec eval (e : expr) (env : value env) : int =
-    match e with 
-    | CstI i -> i
-    | CstB b -> if b then 1 else 0
-    | Var x  ->
-      match lookup env x with
-      | Int i -> i 
-      | _     -> failwith "eval Var"
+let rec eval (e : expr) (env : value env) : value =
+    match e with
+    | CstI i -> Int i
+    | CstB b -> Int (if b then 1 else 0)
+    | Var x  -> lookup env x
     | Prim(ope, e1, e2) -> 
-      let i1 = eval e1 env
-      let i2 = eval e2 env
-      match ope with
-      | "*" -> i1 * i2
-      | "+" -> i1 + i2
-      | "-" -> i1 - i2
-      | "/" -> i1 / i2
-      | "%" -> i1 % i2
-      | "=" -> if i1 = i2 then 1 else 0
-      | "<" -> if i1 < i2 then 1 else 0
-      | ">" -> if i1 > i2 then 1 else 0
-      | ">=" -> if i1 >= i2 then 1 else 0
-      | "<=" -> if i1 <= i2 then 1 else 0
-      | _   -> failwith ("unknown primitive " + ope)
+      let v1 = eval e1 env
+      let v2 = eval e2 env
+      match (ope, v1, v2) with
+      | ("*", Int i1, Int i2) -> Int (i1 * i2)
+      | ("+", Int i1, Int i2) -> Int (i1 + i2)
+      | ("-", Int i1, Int i2) -> Int (i1 - i2)
+      | ("=", Int i1, Int i2) -> Int (if i1 = i2 then 1 else 0)
+      | ("<", Int i1, Int i2) -> Int (if i1 < i2 then 1 else 0)
+      | (">", Int i1, Int i2) -> Int (if i1 > i2 then 1 else 0)
+      | (">=", Int i1, Int i2) -> Int (if i1 >= i2 then 1 else 0)
+      | ("<=", Int i1, Int i2) -> Int (if i1 <= i2 then 1 else 0)
+      |  _ -> failwith "unknown primitive or wrong type"
     | Let(x, eRhs, letBody) -> 
-      let xVal = Int(eval eRhs env)
-      let bodyEnv = (x, xVal) :: env
-      eval letBody bodyEnv
+      let xVal = eval eRhs env
+      let letEnv = (x, xVal) :: env 
+      eval letBody letEnv
     | If(e1, e2, e3) -> 
-      let b = eval e1 env
-      if b<>0 then eval e2 env
-      else eval e3 env
+      match eval e1 env with
+      | Int 0 -> eval e3 env
+      | Int _ -> eval e2 env
+      | _     -> failwith "eval If"
     | Letfun(f, x, fBody, letBody) -> 
-      let bodyEnv = (f, Closure(f, x, fBody, env)) :: env 
+      let bodyEnv = (f, Closure(f, x, fBody, env)) :: env
       eval letBody bodyEnv
-    | Call(Var f, eArg) -> 
-      let fClosure = lookup env f
+    | Call(eFun, eArg) -> 
+      let fClosure = eval eFun env
       match fClosure with
       | Closure (f, x, fBody, fDeclEnv) ->
-        let xVal = Int(eval eArg env)
+        let xVal = eval eArg env
         let fBodyEnv = (x, xVal) :: (f, fClosure) :: fDeclEnv
-        eval fBody fBodyEnv
-      | _ -> failwith "eval Call: not a function"
-    | Call _ -> failwith "eval Call: not first-order function"
+        in eval fBody fBodyEnv
+      | _ -> failwith "eval Call: not a function";;
 
 (* Evaluate in empty environment: program must have no free variables: *)
 
